@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { prisma } from '@/lib/db'
 import { getUserFromRequest } from '@/lib/auth'
 import { calculateBmi, categorizeBmi } from '@/lib/bmi'
 import { logInfo } from '@/lib/logger'
+import { Prisma } from '@prisma/client'
 
 export async function GET(req: NextRequest) {
   const user = await getUserFromRequest(req)
@@ -14,27 +15,44 @@ export async function GET(req: NextRequest) {
   const from = searchParams.get('from')
   const to = searchParams.get('to')
 
-  const db = getDb()
-
-  let sql = `
-    SELECT id, record_date, weight, height, bmi_value, bmi_category, note
-    FROM BMI_Records
-    WHERE user_id = ?
-  `
-  const params: any[] = [user.id]
+  const where: Prisma.BmiRecordWhereInput = {
+    userId: user.id
+  }
 
   if (from) {
-    sql += ' AND date(record_date) >= date(?)'
-    params.push(from)
+    where.recordDate = { ...where.recordDate as Prisma.DateTimeFilter, gte: new Date(from) }
   }
   if (to) {
-    sql += ' AND date(record_date) <= date(?)'
-    params.push(to)
+    // Add one day to include the end date fully
+    const toDate = new Date(to)
+    toDate.setDate(toDate.getDate() + 1)
+    where.recordDate = { ...where.recordDate as Prisma.DateTimeFilter, lt: toDate }
   }
 
-  sql += ' ORDER BY record_date DESC'
+  const records = await prisma.bmiRecord.findMany({
+    where,
+    orderBy: { recordDate: 'desc' },
+    select: {
+      id: true,
+      recordDate: true,
+      weight: true,
+      height: true,
+      bmiValue: true,
+      bmiCategory: true,
+      note: true
+    }
+  })
 
-  const rows = db.prepare(sql).all(...params)
+  // Map to snake_case to match original SQL output
+  const rows = records.map(r => ({
+    id: r.id,
+    record_date: r.recordDate.toISOString(), // SQLite date() might return string, Prisma returns Date
+    weight: r.weight,
+    height: r.height,
+    bmi_value: r.bmiValue,
+    bmi_category: r.bmiCategory,
+    note: r.note
+  }))
 
   return NextResponse.json(rows)
 }
@@ -61,22 +79,23 @@ export async function POST(req: NextRequest) {
   const bmi = calculateBmi(weightNum, heightNum)
   const category = categorizeBmi(bmi)
 
-  const db = getDb()
-  const result = db
-    .prepare(
-      `
-      INSERT INTO BMI_Records
-      (user_id, record_date, weight, height, bmi_value, bmi_category, note)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `
-    )
-    .run(user.id, recordDate, weightNum, heightNum, bmi, category, note ?? null)
+  const record = await prisma.bmiRecord.create({
+    data: {
+      userId: user.id,
+      recordDate: new Date(recordDate),
+      weight: weightNum,
+      height: heightNum,
+      bmiValue: bmi,
+      bmiCategory: category,
+      note: note ?? null
+    }
+  })
 
   logInfo('BMI Record created', { userId: user.id, bmi, category })
 
   return NextResponse.json(
     {
-      id: result.lastInsertRowid,
+      id: record.id,
       recordDate,
       weight: weightNum,
       height: heightNum,
