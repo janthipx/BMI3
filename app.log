@@ -43,3 +43,10 @@
 [2026-01-20T05:36:53.097Z] [INFO] BMI Record created {"userId":9,"bmi":23.7,"category":"Overweight"}
 [2026-01-20T05:37:10.092Z] [INFO] BMI Record created {"userId":9,"bmi":20.6,"category":"Normal weight"}
 [2026-01-20T05:37:58.110Z] [INFO] BMI Record created {"userId":9,"bmi":25.4,"category":"Obesity level 1"}
+[2026-01-20T09:02:09.971Z] [INFO] Register success {"userId":11,"email":"test_auth_1768899728497@example.com"}
+[2026-01-20T09:02:11.128Z] [INFO] Login success {"userId":11,"email":"test_auth_1768899728497@example.com"}
+[2026-01-20T09:02:53.224Z] [WARN] Register failed: email exists {"email":"test@exemple.com"}
+[2026-01-20T09:02:53.394Z] [INFO] Login success {"userId":9,"email":"test@exemple.com"}
+[2026-01-20T09:06:53.487Z] [INFO] Register success {"userId":12,"email":"user_1768900010639@example.com"}
+[2026-01-20T09:06:57.297Z] [INFO] Login success {"userId":12,"email":"user_1768900010639@example.com"}
+[2026-01-20T09:07:00.427Z] [INFO] BMI Record created {"userId":12,"bmi":22.9,"category":"Normal weight"}
