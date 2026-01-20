@@ -28,7 +28,7 @@ async function getRecords() {
   })
 
   // Map to match the existing UI expectation (snake_case from previous API response)
-  return records.map(r => ({
+  return records.map((r: any) => ({
     id: r.id,
     record_date: r.recordDate.toISOString(),
     weight: r.weight,
@@ -87,7 +87,7 @@ export default async function BmiHistoryPage() {
                   </td>
                 </tr>
               ) : (
-                records.map((r) => (
+                records.map((r: any) => (
                   <tr key={r.id} className="hover:bg-indigo-50/30 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 font-medium">
                       {new Date(r.record_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}

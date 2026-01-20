@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getUserFromRequest } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 function getWeekRange(dateStr: string): { start: Date; end: Date; startStr: string; endStr: string } {
   const d = new Date(dateStr)
   const day = d.getDay()
