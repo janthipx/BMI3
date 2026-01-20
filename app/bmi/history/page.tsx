@@ -1,21 +1,47 @@
 import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+import { verifyAuthToken } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-async function fetchHistory() {
+async function getRecords() {
   const cookieStore = await cookies()
-  const res = await fetch(`${process.env.APP_BASE_URL || 'http://localhost:3000'}/api/bmi-records`, {
-    headers: {
-      cookie: cookieStore.toString()
-    },
-    cache: 'no-store'
+  const token = cookieStore.get('auth_token')
+  if (!token) return null
+
+  const payload = verifyAuthToken(token.value)
+  if (!payload) return null
+
+  const records = await prisma.bmiRecord.findMany({
+    where: { userId: payload.sub },
+    orderBy: { recordDate: 'desc' },
+    select: {
+      id: true,
+      recordDate: true,
+      weight: true,
+      height: true,
+      bmiValue: true,
+      bmiCategory: true,
+      note: true
+    }
   })
-  if (!res.ok) return []
-  return res.json()
+
+  // Map to match the existing UI expectation (snake_case from previous API response)
+  return records.map(r => ({
+    id: r.id,
+    record_date: r.recordDate.toISOString(),
+    weight: r.weight,
+    height: r.height,
+    bmi_value: r.bmiValue,
+    bmi_category: r.bmiCategory,
+    note: r.note
+  }))
 }
 
 export default async function BmiHistoryPage() {
-  const records = await fetchHistory()
+  const records = await getRecords()
+  if (!records) redirect('/login')
 
   return (
     <main className="max-w-6xl mx-auto py-12 px-4">
@@ -61,7 +87,7 @@ export default async function BmiHistoryPage() {
                   </td>
                 </tr>
               ) : (
-                records.map((r: any) => (
+                records.map((r) => (
                   <tr key={r.id} className="hover:bg-indigo-50/30 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 font-medium">
                       {new Date(r.record_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })}

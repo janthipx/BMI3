@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db'
 import { getUserFromRequest } from '@/lib/auth'
 import { logInfo, logWarn } from '@/lib/logger'
 
+export const dynamic = 'force-dynamic'
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

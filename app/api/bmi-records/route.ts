@@ -5,6 +5,8 @@ import { calculateBmi, categorizeBmi } from '@/lib/bmi'
 import { logInfo } from '@/lib/logger'
 import { Prisma } from '@prisma/client'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   const user = await getUserFromRequest(req)
   if (!user) {
@@ -106,4 +108,3 @@ export async function POST(req: NextRequest) {
     { status: 201 }
   )
 }
-
