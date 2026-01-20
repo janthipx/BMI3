@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  displayName   String   @map("display_name")
+  heightDefault Float?   @map("height_default")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  bmiRecords          BmiRecord[]
+  passwordResetTokens PasswordResetToken[]
+
+  @@map("Users")
+}
+
+model BmiRecord {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  recordDate  DateTime @map("record_date") @db.Date
+  weight      Float
+  height      Float
+  bmiValue    Float    @map("bmi_value")
+  bmiCategory String   @map("bmi_category")
+  note        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, recordDate])
+  @@map("BMI_Records")
+}
+
+model PasswordResetToken {
+  token     String   @id
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("PasswordResetTokens")
+}

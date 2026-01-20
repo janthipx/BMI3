@@ -1,4 +1,4 @@
-import { getDb } from '@/lib/db'
+import { prisma } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { NextRequest } from 'next/server'
@@ -39,16 +39,15 @@ export async function getUserFromRequest(req: NextRequest) {
   const payload = verifyAuthToken(cookie.value)
   if (!payload) return null
 
-  const db = getDb()
-  const user = db
-    .prepare(
-      `
-      SELECT id, email, display_name, height_default
-      FROM Users
-      WHERE id = ?
-    `
-    )
-    .get(payload.sub) as { id: number; email: string; display_name: string; height_default: number | null } | undefined
+  const user = await prisma.user.findUnique({
+    where: { id: payload.sub },
+    select: {
+      id: true,
+      email: true,
+      displayName: true,
+      heightDefault: true
+    }
+  })
 
   return user || null
 }

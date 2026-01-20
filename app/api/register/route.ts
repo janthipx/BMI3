@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { prisma } from '@/lib/db'
 import { hashPassword } from '@/lib/auth'
 import { logInfo, logWarn } from '@/lib/logger'
 
@@ -11,10 +11,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
-  const db = getDb()
-  const existing = db
-    .prepare('SELECT id FROM Users WHERE email = ?')
-    .get(email) as { id: number } | undefined
+  const existing = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true }
+  })
 
   if (existing) {
     logWarn('Register failed: email exists', { email })
@@ -23,20 +23,19 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await hashPassword(password)
 
-  const result = db
-    .prepare(
-      `
-      INSERT INTO Users (email, password_hash, display_name, height_default)
-      VALUES (?, ?, ?, ?)
-    `
-    )
-    .run(email, passwordHash, displayName, heightDefault ?? null)
+  const user = await prisma.user.create({
+    data: {
+      email,
+      passwordHash,
+      displayName,
+      heightDefault: heightDefault ?? null
+    }
+  })
 
-  logInfo('Register success', { userId: result.lastInsertRowid, email })
+  logInfo('Register success', { userId: user.id, email })
 
   return NextResponse.json(
-    { id: result.lastInsertRowid, email, displayName, heightDefault: heightDefault ?? null },
+    { id: user.id, email, displayName, heightDefault: heightDefault ?? null },
     { status: 201 }
   )
 }
-

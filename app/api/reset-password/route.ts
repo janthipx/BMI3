@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { prisma } from '@/lib/db'
 import { hashPassword } from '@/lib/auth'
 import { logInfo } from '@/lib/logger'
 
@@ -14,44 +14,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Passwords do not match' }, { status: 400 })
   }
 
-  const db = getDb()
-  const record = db
-    .prepare(
-      `
-      SELECT token, user_id, expires_at, used
-      FROM PasswordResetTokens
-      WHERE token = ?
-    `
-    )
-    .get(token) as { token: string; user_id: number; expires_at: string; used: number } | undefined
+  const record = await prisma.passwordResetToken.findUnique({
+    where: { token }
+  })
 
   if (!record || record.used) {
     return NextResponse.json({ error: 'Invalid or used token' }, { status: 400 })
   }
 
-  if (new Date(record.expires_at).getTime() < Date.now()) {
+  if (record.expiresAt < new Date()) {
     return NextResponse.json({ error: 'Token expired' }, { status: 400 })
   }
 
   const passwordHash = await hashPassword(password)
 
-  db.prepare(
-    `
-    UPDATE Users
-    SET password_hash = ?, updated_at = datetime('now')
-    WHERE id = ?
-  `
-  ).run(passwordHash, record.user_id)
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: record.userId },
+      data: { passwordHash }
+    }),
+    prisma.passwordResetToken.update({
+      where: { token },
+      data: { used: true }
+    })
+  ])
 
-  db.prepare(
-    `
-    UPDATE PasswordResetTokens
-    SET used = 1
-    WHERE token = ?
-  `
-  ).run(token)
-
-  logInfo('Password reset success', { userId: record.user_id })
+  logInfo('Password reset success', { userId: record.userId })
 
   return NextResponse.json({ success: true })
 }
