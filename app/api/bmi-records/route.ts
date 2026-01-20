@@ -15,18 +15,18 @@ export async function GET(req: NextRequest) {
   const from = searchParams.get('from')
   const to = searchParams.get('to')
 
-  const where: Prisma.BmiRecordWhereInput = {
+  const where: any = {
     userId: user.id
   }
 
   if (from) {
-    where.recordDate = { ...where.recordDate as Prisma.DateTimeFilter, gte: new Date(from) }
+    where.recordDate = { ...where.recordDate, gte: new Date(from) }
   }
   if (to) {
     // Add one day to include the end date fully
     const toDate = new Date(to)
     toDate.setDate(toDate.getDate() + 1)
-    where.recordDate = { ...where.recordDate as Prisma.DateTimeFilter, lt: toDate }
+    where.recordDate = { ...where.recordDate, lt: toDate }
   }
 
   const records = await prisma.bmiRecord.findMany({
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
   })
 
   // Map to snake_case to match original SQL output
-  const rows = records.map(r => ({
+  const rows = records.map((r: any) => ({
     id: r.id,
     record_date: r.recordDate.toISOString(), // SQLite date() might return string, Prisma returns Date
     weight: r.weight,

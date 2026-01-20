@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
     max_bmi: statsAgg._max.bmiValue
   }
 
-  const categories = categoriesGroup.map(g => ({
+  const categories = categoriesGroup.map((g: any) => ({
     bmi_category: g.bmiCategory,
     count: g._count._all
   }))
