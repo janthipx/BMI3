@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { prisma } from '@/lib/db'
 import { getUserFromRequest } from '@/lib/auth'
 import { logInfo, logWarn } from '@/lib/logger'
 
@@ -15,21 +15,29 @@ export async function DELETE(
   const { id } = await params
   if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 })
 
-  const db = getDb()
+  const recordId = parseInt(id)
+  if (isNaN(recordId)) {
+    return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
+  }
 
   // Verify ownership
-  const record = db.prepare('SELECT user_id FROM BMI_Records WHERE id = ?').get(id) as { user_id: number } | undefined
+  const record = await prisma.bmiRecord.findUnique({
+    where: { id: recordId },
+    select: { userId: true }
+  })
 
   if (!record) {
      return NextResponse.json({ error: 'Record not found' }, { status: 404 })
   }
 
-  if (record.user_id !== user.id) {
+  if (record.userId !== user.id) {
     logWarn('Delete BMI unauthorized attempt', { userId: user.id, recordId: id })
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  db.prepare('DELETE FROM BMI_Records WHERE id = ?').run(id)
+  await prisma.bmiRecord.delete({
+    where: { id: recordId }
+  })
   
   logInfo('BMI Record deleted', { userId: user.id, recordId: id })
 

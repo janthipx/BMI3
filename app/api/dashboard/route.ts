@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { prisma } from '@/lib/db'
 import { getUserFromRequest } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
@@ -8,34 +8,38 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const db = getDb()
+  const latestRecord = await prisma.bmiRecord.findFirst({
+    where: { userId: user.id },
+    orderBy: { recordDate: 'desc' },
+    select: {
+      recordDate: true,
+      weight: true,
+      height: true,
+      bmiValue: true,
+      bmiCategory: true
+    }
+  })
 
-  const latest = db
-    .prepare(
-      `
-      SELECT record_date, weight, height, bmi_value, bmi_category
-      FROM BMI_Records
-      WHERE user_id = ?
-      ORDER BY record_date DESC
-      LIMIT 1
-    `
-    )
-    .get(user.id)
-
-  const summary = db
-    .prepare(
-      `
-      SELECT COUNT(*) as count,
-             AVG(bmi_value) as avg_bmi
-      FROM BMI_Records
-      WHERE user_id = ?
-    `
-    )
-    .get(user.id) as { count: number; avg_bmi: number | null }
+  const stats = await prisma.bmiRecord.aggregate({
+    where: { userId: user.id },
+    _count: { _all: true },
+    _avg: { bmiValue: true }
+  })
 
   return NextResponse.json({
-    latest,
-    summary
+    latest: latestRecord
+      ? {
+          record_date: latestRecord.recordDate.toISOString(),
+          weight: latestRecord.weight,
+          height: latestRecord.height,
+          bmi_value: latestRecord.bmiValue,
+          bmi_category: latestRecord.bmiCategory
+        }
+      : null,
+    summary: {
+      count: stats._count._all,
+      avg_bmi: stats._avg.bmiValue || null
+    }
   })
 }
 

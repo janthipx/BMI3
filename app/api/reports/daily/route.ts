@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getDb } from '@/lib/db'
+import { prisma } from '@/lib/db'
 import { getUserFromRequest } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
@@ -7,37 +7,52 @@ export async function GET(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { searchParams } = new URL(req.url)
-  const date = searchParams.get('date')
-  if (!date) return NextResponse.json({ error: 'Date parameter is required' }, { status: 400 })
+  const dateStr = searchParams.get('date')
+  if (!dateStr) return NextResponse.json({ error: 'Date parameter is required' }, { status: 400 })
 
-  const db = getDb()
+  const startOfDay = new Date(dateStr)
+  startOfDay.setHours(0, 0, 0, 0)
+  const endOfDay = new Date(dateStr)
+  endOfDay.setHours(23, 59, 59, 999)
 
-  const stats = db
-    .prepare(
-      `
-      SELECT COUNT(*) as count,
-             AVG(bmi_value) as avg_bmi,
-             MIN(bmi_value) as min_bmi,
-             MAX(bmi_value) as max_bmi
-      FROM BMI_Records
-      WHERE user_id = ?
-        AND date(record_date) = date(?)
-    `
-    )
-    .get(user.id, date)
+  const statsAgg = await prisma.bmiRecord.aggregate({
+    where: {
+      userId: user.id,
+      recordDate: {
+        gte: startOfDay,
+        lte: endOfDay
+      }
+    },
+    _count: { _all: true },
+    _avg: { bmiValue: true },
+    _min: { bmiValue: true },
+    _max: { bmiValue: true }
+  })
 
-  const categories = db
-    .prepare(
-      `
-      SELECT bmi_category, COUNT(*) as count
-      FROM BMI_Records
-      WHERE user_id = ?
-        AND date(record_date) = date(?)
-      GROUP BY bmi_category
-    `
-    )
-    .all(user.id, date)
+  const categoriesGroup = await prisma.bmiRecord.groupBy({
+    by: ['bmiCategory'],
+    where: {
+      userId: user.id,
+      recordDate: {
+        gte: startOfDay,
+        lte: endOfDay
+      }
+    },
+    _count: { _all: true }
+  })
 
-  return NextResponse.json({ date, stats, categories })
+  const stats = {
+    count: statsAgg._count._all,
+    avg_bmi: statsAgg._avg.bmiValue,
+    min_bmi: statsAgg._min.bmiValue,
+    max_bmi: statsAgg._max.bmiValue
+  }
+
+  const categories = categoriesGroup.map(g => ({
+    bmi_category: g.bmiCategory,
+    count: g._count._all
+  }))
+
+  return NextResponse.json({ date: dateStr, stats, categories })
 }
 
