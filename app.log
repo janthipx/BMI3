@@ -6,3 +6,40 @@
 [2026-01-19T09:25:28.533Z] [INFO] BMI Record created {"userId":1,"bmi":21.9,"category":"น้ำหนักปกติ"}
 [2026-01-19T09:25:57.692Z] [INFO] BMI Record created {"userId":1,"bmi":23.4,"category":"น้ำหนักเกิน"}
 [2026-01-19T09:42:57.659Z] [INFO] Login success {"userId":1,"email":"janthipa2006@gmail.com"}
+[2026-01-20T03:35:24.820Z] [WARN] Login failed: wrong password {"email":"janthipa2006@gmail.com"}
+[2026-01-20T03:35:34.563Z] [WARN] Login failed: wrong password {"email":"janthipa2006@gmail.com"}
+[2026-01-20T03:35:46.586Z] [INFO] Login success {"userId":1,"email":"janthipa2006@gmail.com"}
+[2026-01-20T04:04:58.654Z] [INFO] Register success {"userId":2,"email":"user_1768881896760@example.com"}
+[2026-01-20T04:04:59.452Z] [INFO] Login success {"userId":2,"email":"user_1768881896760@example.com"}
+[2026-01-20T04:05:00.089Z] [INFO] BMI Record created {"userId":2,"bmi":22.9,"category":"Normal weight"}
+[2026-01-20T04:14:27.557Z] [INFO] Register success {"userId":3,"email":"user_1768882466041@example.com"}
+[2026-01-20T04:14:28.550Z] [INFO] Login success {"userId":3,"email":"user_1768882466041@example.com"}
+[2026-01-20T04:14:29.251Z] [INFO] BMI Record created {"userId":3,"bmi":22.9,"category":"Normal weight"}
+[2026-01-20T04:15:36.651Z] [INFO] Login success {"userId":1,"email":"janthipa2006@gmail.com"}
+[2026-01-20T04:17:01.852Z] [INFO] Register success {"userId":4,"email":"user_1768882620306@example.com"}
+[2026-01-20T04:17:02.438Z] [INFO] Login success {"userId":4,"email":"user_1768882620306@example.com"}
+[2026-01-20T04:17:03.603Z] [INFO] BMI Record created {"userId":4,"bmi":22.9,"category":"Normal weight"}
+[2026-01-20T04:18:10.077Z] [INFO] Login success {"userId":1,"email":"janthipa2006@gmail.com"}
+[2026-01-20T04:28:05.925Z] [INFO] Login success {"userId":1,"email":"janthipa2006@gmail.com"}
+[2026-01-20T04:38:25.420Z] [INFO] Login success {"userId":1,"email":"janthipa2006@gmail.com"}
+[2026-01-20T04:42:25.775Z] [INFO] Register success {"userId":5,"email":"user_1768884144415@example.com"}
+[2026-01-20T04:42:26.464Z] [INFO] Login success {"userId":5,"email":"user_1768884144415@example.com"}
+[2026-01-20T04:42:27.203Z] [INFO] BMI Record created {"userId":5,"bmi":22.9,"category":"Normal weight"}
+[2026-01-20T04:44:29.722Z] [WARN] Login failed: user not found {"email":"user_1768884268823@example.com"}
+[2026-01-20T04:45:43.137Z] [INFO] Register success {"userId":6,"email":"user_1768884341960@example.com"}
+[2026-01-20T04:45:44.002Z] [INFO] Login success {"userId":6,"email":"user_1768884341960@example.com"}
+[2026-01-20T04:45:44.623Z] [INFO] BMI Record created {"userId":6,"bmi":22.9,"category":"Normal weight"}
+[2026-01-20T04:47:30.294Z] [INFO] Register success {"userId":7,"email":"ui_test_1768884448762@example.com"}
+[2026-01-20T04:47:31.321Z] [INFO] Login success {"userId":7,"email":"ui_test_1768884448762@example.com"}
+[2026-01-20T04:47:32.473Z] [INFO] BMI Record created {"userId":7,"bmi":22.7,"category":"Normal weight"}
+[2026-01-20T04:49:11.492Z] [INFO] Register success {"userId":8,"email":"ui_test_1768884548478@example.com"}
+[2026-01-20T04:49:13.621Z] [INFO] Login success {"userId":8,"email":"ui_test_1768884548478@example.com"}
+[2026-01-20T04:49:14.931Z] [INFO] BMI Record created {"userId":8,"bmi":22.7,"category":"Normal weight"}
+[2026-01-20T04:50:42.247Z] [INFO] Login success {"userId":1,"email":"janthipa2006@gmail.com"}
+[2026-01-20T04:52:44.244Z] [INFO] Login success {"userId":1,"email":"janthipa2006@gmail.com"}
+[2026-01-20T04:53:02.922Z] [INFO] BMI Record created {"userId":1,"bmi":22.6,"category":"Normal weight"}
+[2026-01-20T05:35:51.108Z] [INFO] Register success {"userId":9,"email":"test@exemple.com"}
+[2026-01-20T05:36:09.140Z] [INFO] Login success {"userId":9,"email":"test@exemple.com"}
+[2026-01-20T05:36:53.097Z] [INFO] BMI Record created {"userId":9,"bmi":23.7,"category":"Overweight"}
+[2026-01-20T05:37:10.092Z] [INFO] BMI Record created {"userId":9,"bmi":20.6,"category":"Normal weight"}
+[2026-01-20T05:37:58.110Z] [INFO] BMI Record created {"userId":9,"bmi":25.4,"category":"Obesity level 1"}

@@ -6,11 +6,15 @@ import { calculateBmi, categorizeBmi } from '@/lib/bmi'
 
 export default function BmiNewPage() {
   const router = useRouter()
-  const [date, setDate] = useState('')
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [weight, setWeight] = useState('')
   const [height, setHeight] = useState('')
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
+
+  // Calculate preview
+  const bmiValue = (weight && height) ? calculateBmi(Number(weight), Number(height)) : null
+  const bmiCategory = bmiValue ? categorizeBmi(bmiValue) : null
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()
@@ -34,85 +38,128 @@ export default function BmiNewPage() {
   }
 
   return (
-    <main className="p-4 flex justify-center">
-      <form className="w-full max-w-md space-y-4" onSubmit={onSubmit}>
-        <h1 className="text-2xl font-semibold">save BMI</h1>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
-        <div className="space-y-1">
-          <label className="block text-sm">Date</label>
-          <input
-            className="w-full border rounded px-2 py-1"
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="block text-sm">Weight (kg)</label>
-          <input
-            className="w-full border rounded px-2 py-1"
-            type="number"
-            step="0.1"
-            value={weight}
-            onChange={e => setWeight(e.target.value)}
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="block text-sm">Height (m)</label>
-          <input
-            className="w-full border rounded px-2 py-1"
-            type="number"
-            step="0.01"
-            value={height}
-            onChange={e => setHeight(e.target.value)}
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="block text-sm">Note</label>
-          <textarea
-            className="w-full border rounded px-2 py-1"
-            rows={3}
-            value={note}
-            onChange={e => setNote(e.target.value)}
-          />
-        </div>
+    <main className="max-w-2xl mx-auto py-12 px-4">
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-bold text-slate-900 font-serif mb-3">New Measurement</h1>
+        <p className="text-slate-500">Record your current metrics to track your health journey.</p>
+      </div>
 
-        {/* Display Calculated BMI */}
-        {(() => {
-          const w = parseFloat(weight)
-          const h = parseFloat(height)
-
-          // Show warning if height seems to be in cm (e.g. > 3 meters)
-          if (!isNaN(h) && h >= 3) {
-            return (
-              <div className="p-2 bg-yellow-50 text-yellow-700 text-sm rounded text-center">
-                ⚠️ Please enter height in meters (e.g. 1.70)
+      <div className="glass-card p-8 md:p-10">
+        <form onSubmit={onSubmit} className="space-y-6">
+          {error && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
               </div>
-            )
-          }
+            </div>
+          )}
 
-          // Only calculate if inputs are valid and reasonable
-          if (!isNaN(w) && !isNaN(h) && h > 0 && h < 3 && w > 0) {
-            try {
-              const bmi = calculateBmi(w, h)
-              if (bmi > 0) {
-                const cat = categorizeBmi(bmi)
-                return (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded text-center">
-                    <p className="font-semibold text-blue-800 text-lg">BMI: {bmi}</p>
-                    <p className="text-blue-600">Category: {cat}</p>
-                  </div>
-                )
-              }
-            } catch { return null }
-          }
-          return null
-        })()}
+          <div>
+            <label htmlFor="date" className="block text-sm font-semibold text-slate-700 mb-2">Date</label>
+            <input
+              id="date"
+              type="date"
+              className="input-field w-full"
+              value={date}
+              onChange={e => setDate(e.target.value)}
+              required
+            />
+          </div>
 
-        <button type="submit" className="w-full bg-blue-600 text-white rounded py-2">
-          Save
-        </button>
-      </form>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="weight" className="block text-sm font-semibold text-slate-700 mb-2">Weight (kg)</label>
+              <div className="relative">
+                <input
+                  id="weight"
+                  type="number"
+                  step="0.1"
+                  className="input-field w-full pr-12"
+                  placeholder="0.0"
+                  value={weight}
+                  onChange={e => setWeight(e.target.value)}
+                  required
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <span className="text-slate-400 sm:text-sm">kg</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="height" className="block text-sm font-semibold text-slate-700 mb-2">Height (m)</label>
+              <div className="relative">
+                <input
+                  id="height"
+                  type="number"
+                  step="0.01"
+                  className="input-field w-full pr-12"
+                  placeholder="0.00"
+                  value={height}
+                  onChange={e => setHeight(e.target.value)}
+                  required
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                  <span className="text-slate-400 sm:text-sm">m</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Live BMI Preview */}
+          {(bmiValue !== null) && (
+            <div className="bg-indigo-50/50 rounded-xl p-6 border border-indigo-100 flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-indigo-500 font-semibold mb-1">Estimated BMI</p>
+                <p className="text-3xl font-bold text-slate-900 font-serif">{bmiValue.toFixed(1)}</p>
+              </div>
+              <div className="text-right">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                  bmiCategory === 'Normal weight' ? 'bg-green-100 text-green-800' :
+                  bmiCategory === 'Underweight' ? 'bg-blue-100 text-blue-800' :
+                  'bg-orange-100 text-orange-800'
+                }`}>
+                  {bmiCategory}
+                </span>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="note" className="block text-sm font-semibold text-slate-700 mb-2">Note (Optional)</label>
+            <textarea
+              id="note"
+              className="input-field w-full h-24 resize-none"
+              placeholder="How are you feeling today?"
+              value={note}
+              onChange={e => setNote(e.target.value)}
+            />
+          </div>
+
+          <div className="pt-4 flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="flex-1 py-3 px-4 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 btn-primary py-3 justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+            >
+              Save Record
+            </button>
+          </div>
+        </form>
+      </div>
     </main>
   )
 }
