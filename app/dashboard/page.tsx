@@ -1,22 +1,55 @@
 import { cookies } from 'next/headers'
 import Link from 'next/link'
+import { verifyAuthToken } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
-async function fetchDashboard() {
+async function getDashboardData() {
   const cookieStore = await cookies()
-  const res = await fetch(`${process.env.APP_BASE_URL || 'http://localhost:3000'}/api/dashboard`, {
-    headers: {
-      cookie: cookieStore.toString()
-    },
-    cache: 'no-store'
+  const token = cookieStore.get('auth_token')
+  if (!token) return null
+
+  const payload = verifyAuthToken(token.value)
+  if (!payload) return null
+
+  const latestRecord = await prisma.bmiRecord.findFirst({
+    where: { userId: payload.sub },
+    orderBy: { recordDate: 'desc' },
+    select: {
+      recordDate: true,
+      weight: true,
+      height: true,
+      bmiValue: true,
+      bmiCategory: true
+    }
   })
-  if (!res.ok) return null
-  return res.json()
+
+  const stats = await prisma.bmiRecord.aggregate({
+    where: { userId: payload.sub },
+    _count: { _all: true },
+    _avg: { bmiValue: true }
+  })
+
+  return {
+    latest: latestRecord
+      ? {
+          record_date: latestRecord.recordDate.toISOString(),
+          weight: latestRecord.weight,
+          height: latestRecord.height,
+          bmi_value: latestRecord.bmiValue,
+          bmi_category: latestRecord.bmiCategory
+        }
+      : null,
+    summary: {
+      count: stats._count._all,
+      avg_bmi: stats._avg.bmiValue || null
+    }
+  }
 }
 
 export default async function DashboardPage() {
-  const data = await fetchDashboard()
+  const data = await getDashboardData()
 
   return (
     <main className="space-y-8">

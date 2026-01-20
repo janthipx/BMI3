@@ -1,12 +1,15 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useState, useEffect } from 'react'
 
 export default function YearlyReportPage() {
-  const currentYear = new Date().getFullYear()
-  const [year, setYear] = useState(String(currentYear))
+  const [year, setYear] = useState('')
   const [result, setResult] = useState<any | null>(null)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    setYear(String(new Date().getFullYear()))
+  }, [])
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()

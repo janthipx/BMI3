@@ -17,11 +17,13 @@ export function log(level: LogLevel, message: string, meta?: any) {
   // For simplicity, we just console.log in development, but in prod we might append to file
   console.log(logLine.trim())
   
-  // Optional: Append to file
-  try {
-    fs.appendFileSync(LOG_FILE_PATH, logLine)
-  } catch (err) {
-    console.error('Failed to write to log file', err)
+  // Optional: Append to file only in development
+  if (process.env.NODE_ENV === 'development') {
+    try {
+      fs.appendFileSync(LOG_FILE_PATH, logLine)
+    } catch (err) {
+      console.error('Failed to write to log file', err)
+    }
   }
 }
 

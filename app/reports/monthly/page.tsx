@@ -1,15 +1,18 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useState, useEffect } from 'react'
 
 export default function MonthlyReportPage() {
-  const currentYear = new Date().getFullYear()
-  const currentMonth = new Date().getMonth() + 1
-
-  const [year, setYear] = useState(String(currentYear))
-  const [month, setMonth] = useState(String(currentMonth))
+  const [year, setYear] = useState('')
+  const [month, setMonth] = useState('')
   const [result, setResult] = useState<any | null>(null)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const now = new Date()
+    setYear(String(now.getFullYear()))
+    setMonth(String(now.getMonth() + 1))
+  }, [])
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()

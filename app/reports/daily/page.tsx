@@ -1,11 +1,15 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useState, useEffect } from 'react'
 
 export default function DailyReportPage() {
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [date, setDate] = useState('')
   const [result, setResult] = useState<any | null>(null)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    setDate(new Date().toISOString().split('T')[0])
+  }, [])
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault()

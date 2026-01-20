@@ -1,16 +1,20 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { calculateBmi, categorizeBmi } from '@/lib/bmi'
 
 export default function BmiNewPage() {
   const router = useRouter()
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [date, setDate] = useState('')
   const [weight, setWeight] = useState('')
   const [height, setHeight] = useState('')
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    setDate(new Date().toISOString().split('T')[0])
+  }, [])
 
   // Calculate preview
   const bmiValue = (weight && height) ? calculateBmi(Number(weight), Number(height)) : null
